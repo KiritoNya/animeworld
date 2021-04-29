@@ -5,7 +5,6 @@ import (
 	"github.com/KiritoNya/htmlutils"
 	"golang.org/x/net/html"
 	"strconv"
-	"strings"
 )
 
 func equalSliceFloat(a, b []float64) bool {
