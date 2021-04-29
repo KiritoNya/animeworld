@@ -42,7 +42,7 @@ func (a *Archive) GetSeason() (err error) {
 		return err
 	}
 
-	for i:=0; i<a.TotalPages ; i++ {
+	for i:=1; i<=a.TotalPages ; i++ {
 
 		link := a.url + "?page=" + strconv.Itoa(i)
 
