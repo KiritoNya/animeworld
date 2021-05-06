@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"github.com/KiritoNya/htmlutils"
 	"golang.org/x/net/html"
-	"net/http"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -47,13 +48,12 @@ func NewSeason(urlSeason string) (*Season, error) {
 
 	var s Season
 
-	resp, err := http.Get(urlSeason)
+	resp, err := doRequest(urlSeason)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
-	htmlBody, err := html.Parse(resp.Body)
+	htmlBody, err := html.Parse(strings.NewReader(resp))
 	if err != nil {
 		return nil, err
 	}
@@ -100,25 +100,44 @@ func (s *Season) GetAnilist() error {
 //GetEpisodes create all episode object of season.
 func (s *Season) GetEpisodes() error {
 
+	var lastEpisodeNum float64
+
 	nodes, err := htmlutils.QuerySelector(s.node, "li", "class", "episode")
 	if err != nil {
 		return errors.New("Episodes not found")
 	}
 
-	for numEp, node := range nodes {
+	for _, node := range nodes {
 
-		link, err := htmlutils.GetValueAttr(node, "a", "href")
-		if err != nil {
-			return errors.New(fmt.Sprintf("Link of episode %d not found", numEp))
+		numEp := htmlutils.GetNodeText(node, "a")
+		eps := strings.Split(string(numEp), "-") //Potrebbero esserci ep come "1-2"
+
+		for _, ep := range eps {
+
+			episodeNum, err := strconv.ParseFloat(ep, 64)
+			if err != nil {
+				return err
+			}
+
+			if lastEpisodeNum < episodeNum {
+
+				lastEpisodeNum = episodeNum
+
+				link, err := htmlutils.GetValueAttr(node, "a", "href")
+				if err != nil {
+					return errors.New(fmt.Sprintf("Link of episode %d not found", numEp))
+				}
+
+				ep, err := NewEpisode(BaseUrl + string(link[0]))
+				if err != nil {
+					return errors.New(fmt.Sprintf("Error to create new episode[%d] object.", numEp))
+				}
+
+				ep.Number = append(ep.Number, float64(episodeNum))
+
+				s.Episodes = append(s.Episodes, ep)
+			}
 		}
-
-		ep, err := NewEpisode(BaseUrl + string(link[0]))
-		if err != nil {
-			return errors.New(fmt.Sprintf("Error to create new episode[%d] object.", numEp))
-		}
-
-		s.Episodes = append(s.Episodes, ep)
-
 	}
 	return nil
 }

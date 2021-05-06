@@ -56,3 +56,31 @@ func getServers(node *html.Node) ([]Server, error) {
 
 	return s, nil
 }
+
+func doRequest(url string) (resp string, err error) {
+
+	if !serviceActive {
+		err = NewDefaultService()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	wd, err := NewDefaultWebDriver(url)
+	if err != nil {
+
+	}
+	defer wd.Close()
+
+	err = wd.Get(url)
+	if err != nil {
+		return "", err
+	}
+
+	pageString, err := wd.PageSource()
+	if err != nil {
+		return "", err
+	}
+
+	return pageString, nil
+}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/KiritoNya/htmlutils"
 	"golang.org/x/net/html"
-	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -28,13 +27,12 @@ type Server struct {
 //NewEpisode is an constructor of Episode object.
 func NewEpisode(link string) (*Episode, error) {
 
-	resp, err := http.Get(link)
+	resp, err := doRequest(link)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
-	htmlBody, err := html.Parse(resp.Body)
+	htmlBody, err := html.Parse(strings.NewReader(resp))
 	if err != nil {
 		return nil, err
 	}
@@ -97,6 +95,8 @@ func (ep *Episode) GetStreamLinks() error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("SERVERS:", servers)
 
 	//Get section of servers episodes
 	serversHtml, err := htmlutils.QuerySelector(ep.htmlPage, "div", "class", "server")
@@ -163,13 +163,25 @@ func (ep *Episode) GetStreamLinks() error {
 					return errors.New("Link of episode not found")
 				}
 
-				resp, err := http.Get(episodeInfoApi+filepath.Base(string(href[0])))
+				fmt.Println("CALCULATE ON SERVER", server, "EPISODE", ep.Number)
+				resp, err := doRequest(episodeInfoApi+filepath.Base(string(href[0])))
 				if err != nil {
 					return errors.New("Error to get response of episode info api.")
 				}
-				defer resp.Body.Close()
 
-				err = json.NewDecoder(resp.Body).Decode(&objmap)
+				htmlBody, err := html.Parse(strings.NewReader(resp))
+				if err != nil {
+					return err
+				}
+
+				div, err := htmlutils.QuerySelector(htmlBody, "div", "id", "json")
+				if err != nil {
+					return err
+				}
+
+				nodeText := htmlutils.GetNodeText(div[0], "div")
+
+				err = json.Unmarshal(nodeText, &objmap)
 				if err != nil {
 					return errors.New("Error to decode response of episode info api.")
 				}

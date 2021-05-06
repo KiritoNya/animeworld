@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/KiritoNya/htmlutils"
 	"golang.org/x/net/html"
-	"net/http"
 	"strconv"
+	"strings"
 )
 
 type Archive struct {
@@ -21,17 +21,29 @@ func NewArchive(method string) (*Archive, error) {
 	var err error
 
 	a.url = composeURL(method)
-	a.htmlPage, err = doRequest(a.url)
+
+	resp, err := doRequest(a.url)
 	if err != nil {
 		return nil, err
 	}
+
+	a.htmlPage, err = html.Parse(strings.NewReader(resp))
+	if err != nil {
+		return nil, err
+	}
+
 	return &a, nil
 }
 
 func (a *Archive) GetSeason() (err error) {
 
 	if a.htmlPage == nil {
-		a.htmlPage, err = doRequest(composeURL("all"))
+		resp, err := doRequest(composeURL("all"))
+		if err != nil {
+			return err
+		}
+
+		a.htmlPage, err = html.Parse(strings.NewReader(resp))
 		if err != nil {
 			return err
 		}
@@ -42,34 +54,29 @@ func (a *Archive) GetSeason() (err error) {
 		return err
 	}
 
-	for i:=1; i<=a.TotalPages ; i++ {
+	for i:=0; i<a.TotalPages ; i++ {
 
 		link := a.url + "?page=" + strconv.Itoa(i)
 
-		htmlPage, err := doRequest(link)
+		resp, err := doRequest(link)
 		if err != nil {
 			return err
 		}
 
-		//Get container
-		container, err := htmlutils.QuerySelector(htmlPage, "div", "class", "widget az-list")
+		htmlPage, err := html.Parse(strings.NewReader(resp))
 		if err != nil {
-			return errors.New("Container not found!")
+			return err
 		}
 
 		//Get all seasons html sections
-		seasonsNode, err := htmlutils.QuerySelector(container[0], "div", "class", "item")
+		seasonsNode, err := htmlutils.QuerySelector(htmlPage, "div", "class", "item")
 		if err != nil {
 			return errors.New("Error to obtain seasons section in the archive")
 		}
 
-		for i, seasonNode := range seasonsNode {
+		for _, seasonNode := range seasonsNode {
 
-			if i == 0 {
-				continue
-			}
-
-			tagA, err := htmlutils.GetGeneralTags(seasonNode, "a")
+			tagA, err := htmlutils.QuerySelector(seasonNode, "a", "class", "name")
 			if err != nil {
 				return errors.New("Error to obtain tag \"a\" of seasons section")
 			}
@@ -111,22 +118,6 @@ func (a *Archive) GetTotalPages() error {
 	}
 
 	return nil
-}
-
-func doRequest(link string) (*html.Node, error) {
-
-	resp, err := http.Get(link)
-	if err != nil {
-		return nil, errors.New("Errors to get archive page: " + err.Error())
-	}
-	defer resp.Body.Close()
-
-	htmlPage, err := html.Parse(resp.Body)
-	if err != nil {
-		return nil, errors.New("Error to parse archive page: " + err.Error())
-	}
-
-	return htmlPage, nil
 }
 
 func composeURL(method string) string {
