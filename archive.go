@@ -2,11 +2,11 @@ package animeworld
 
 import (
 	"errors"
+	"fmt"
 	"github.com/KiritoNya/htmlutils"
 	"golang.org/x/net/html"
 	"strconv"
 	"strings"
-	"fmt"
 )
 
 type Archive struct {
@@ -55,18 +55,24 @@ func (a *Archive) GetSeason() (err error) {
 		return err
 	}
 
-	for i:=0; i<a.TotalPages ; i++ {
+	for i:=1; i<=a.TotalPages ; i++ {
 
-		link := a.url + "?page=" + strconv.Itoa(i)
+		htmlPage := a.htmlPage
 
-		resp, err := doRequest(link)
-		if err != nil {
-			return err
-		}
+		if i != 1 {
 
-		htmlPage, err := html.Parse(strings.NewReader(resp))
-		if err != nil {
-			return err
+			link := a.url + "?page=" + strconv.Itoa(i)
+
+			resp, err := doRequest(link)
+			if err != nil {
+				return err
+			}
+
+			htmlPage, err = html.Parse(strings.NewReader(resp))
+			if err != nil {
+				return err
+			}
+
 		}
 
 		items, err := htmlutils.QuerySelector(htmlPage, "div", "class", "items")
@@ -95,7 +101,7 @@ func (a *Archive) GetSeason() (err error) {
 			if err != nil {
 				return errors.New("Error to obtain link of seasons section")
 			}
-			
+
 			fmt.Println(BaseUrl + string(href[0]))
 
 			season, err := NewSeason( BaseUrl + string(href[0]))
