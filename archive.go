@@ -94,6 +94,8 @@ func (a *Archive) GetSeason() (err error) {
 			if err != nil {
 				return errors.New("Error to obtain link of seasons section")
 			}
+			
+			fmt.Println(BaseUrl + string(href[0]))
 
 			season, err := NewSeason( BaseUrl + string(href[0]))
 			if err != nil {
