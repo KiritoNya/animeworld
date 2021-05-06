@@ -68,13 +68,22 @@ func (a *Archive) GetSeason() (err error) {
 			return err
 		}
 
+		items, err := htmlutils.QuerySelector(htmlPage, "div", "class", "items")
+		if err != nil {
+			return errors.New("Archive error: " + err.Error())
+		}
+
 		//Get all seasons html sections
-		seasonsNode, err := htmlutils.QuerySelector(htmlPage, "div", "class", "item")
+		seasonsNode, err := htmlutils.QuerySelector(items[0], "div", "class", "item")
 		if err != nil {
 			return errors.New("Error to obtain seasons section in the archive")
 		}
 
-		for _, seasonNode := range seasonsNode {
+		for i, seasonNode := range seasonsNode {
+
+			if i == 0 {
+				continue
+			}
 
 			tagA, err := htmlutils.QuerySelector(seasonNode, "a", "class", "name")
 			if err != nil {
