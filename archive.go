@@ -6,6 +6,7 @@ import (
 	"golang.org/x/net/html"
 	"strconv"
 	"strings"
+	"fmt"
 )
 
 type Archive struct {
