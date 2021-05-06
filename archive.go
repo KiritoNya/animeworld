@@ -52,7 +52,7 @@ func (a *Archive) GetSeason() (err error) {
 
 	err = a.GetTotalPages()
 	if err != nil {
-		return err
+		a.TotalPages=1
 	}
 
 	for i:=1; i<=a.TotalPages ; i++ {
