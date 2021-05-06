@@ -12,7 +12,7 @@ func TestNewArchive(t *testing.T) {
 
 func TestArchive_GetSeason(t *testing.T) {
 
-	a, err := NewArchive("e")
+	a, err := NewArchive("x")
 	if err != nil {
 		t.Fatal("Error to create archive object")
 	}
