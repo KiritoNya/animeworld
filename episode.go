@@ -139,8 +139,8 @@ func (ep *Episode) GetStreamLinks() error {
 			}
 			numString := string(num[0])
 
+			//Get number of episodes for example "1-2"
 			episodes := strings.Split(numString, "-")
-
 			for _, episode := range episodes {
 
 				numFloat, err := strconv.ParseFloat(episode, 64)
@@ -192,8 +192,6 @@ func (ep *Episode) GetStreamLinks() error {
 				}
 
 				ep.StreamLinks[server.Name] = directLink
-
-				fmt.Println(directLink)
 			}
 		}
 	}

@@ -3,8 +3,10 @@ package animeworld
 import (
 	"errors"
 	"github.com/KiritoNya/htmlutils"
+	"github.com/tebeka/selenium"
 	"golang.org/x/net/html"
 	"strconv"
+	"time"
 )
 
 func equalSliceFloat(a, b []float64) bool {
@@ -59,6 +61,9 @@ func getServers(node *html.Node) ([]Server, error) {
 
 func doRequest(url string) (resp string, err error) {
 
+	var retry int
+	var wd selenium.WebDriver
+
 	if !serviceActive {
 		err = NewDefaultService()
 		if err != nil {
@@ -66,9 +71,19 @@ func doRequest(url string) (resp string, err error) {
 		}
 	}
 
-	wd, err := NewDefaultWebDriver(url)
-	if err != nil {
-
+	for {
+		wd, err = NewDefaultWebDriver(url)
+		if err == nil {
+			break
+		}
+		if retry != 3 {
+			time.Sleep(2 * time.Second)
+			wd.Close()
+			retry++
+			continue
+		}
+		wd.Close()
+		return "", err
 	}
 	defer wd.Close()
 
