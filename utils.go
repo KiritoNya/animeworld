@@ -78,11 +78,9 @@ func doRequest(url string) (resp string, err error) {
 		}
 		if retry != 3 {
 			time.Sleep(2 * time.Second)
-			wd.Close()
 			retry++
 			continue
 		}
-		wd.Close()
 		return "", err
 	}
 	defer wd.Close()
