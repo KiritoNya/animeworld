@@ -1,11 +1,13 @@
 package animeworld
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/KiritoNya/htmlutils"
 	"golang.org/x/net/html"
+	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -230,5 +232,73 @@ func (ep *Episode) GetDownloadLink() error {
 		ep.DownloadLink = strings.Replace(string(links[0]), "download-file.php?id=", "", -1)
 	}
 	return  nil
+}
+
+func (ep *Episode) GetDirectLinkServerBeta() (err error) {
+
+	for server, link := range ep.StreamLinks {
+		if server == "Beta Server" {
+
+			var objmap map[string]json.RawMessage
+
+			id := filepath.Base(link)
+
+			resp, err := http.Post(AnimeworldBizApi + id, "", nil)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != 200 {
+				return errors.New("Error to do request: " + resp.Status)
+			}
+
+			err = json.NewDecoder(resp.Body).Decode(&objmap)
+			if err != nil {
+				return err
+			}
+
+			data, err := objmap["data"].MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			data = bytes.Replace(data, []byte("["), []byte(""),-1)
+			data = bytes.Replace(data, []byte("]"), []byte(""),-1)
+
+			err = json.Unmarshal(data, &objmap)
+			if err != nil {
+				return err
+			}
+
+			file, err := objmap["file"].MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			fileUrl := strings.Replace(string(file), "\"", "", -1)
+			fileUrl = strings.Replace(fileUrl, "\\/", "/", -1)
+
+			req, err := http.NewRequest("GET", fileUrl, nil)
+			if err != nil {
+				panic(err)
+			}
+			client := new(http.Client)
+			client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+
+				ep.StreamLinks["Beta Server"] = req.URL.String()
+
+				return nil
+			}
+
+			resp, err = client.Do(req)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}
+	}
+	return nil
 }
 

@@ -78,6 +78,25 @@ func TestEpisode_GetStreamLinks(t *testing.T) {
 	t.Log(ep.StreamLinks)
 }
 
+func TestEpisode_GetDirectLinkServerBeta(t *testing.T) {
+
+	var ep Episode
+
+	ep.StreamLinks = make(map[string]string)
+
+	ep.StreamLinks = map[string]string {
+		"Beta Server": "https://www.animeworld.biz/v/6mo2pm6mwdv",
+	}
+
+	err := ep.GetDirectLinkServerBeta()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(ep.StreamLinks)
+
+}
+
 func TestNewRssAnimeworld2(t *testing.T) {
 
 	result := "http://www.thehiddendungeononlyicanenter.net/download-file.php?id=DLL/ANIME/MushokuTensei/MushokuTensei_Ep_01-02_SUB_ITA_v0.mp4"
