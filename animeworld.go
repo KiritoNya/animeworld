@@ -59,8 +59,8 @@ func NewService(cfg *ServiceConfig) (err error) {
 func NewDefaultService() error {
 
 	cfg := ServiceConfig{
-		SeleniumPath:    "/home/kiritonya/go/src/github.com/tebeka/selenium/vendor/selenium-server.jar",
-		GeckoDriverPath: "/home/kiritonya/go/src/github.com/tebeka/selenium/vendor/geckodriver",
+		SeleniumPath:    "vendor/selenium-server.jar",
+		GeckoDriverPath: "vendor/geckodriver",
 		Port:            4444,
 		Verbose:         false,
 		Output:          nil,
