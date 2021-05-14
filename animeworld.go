@@ -5,6 +5,7 @@ import (
 	"github.com/tebeka/selenium"
 	"io"
 	"os"
+	"fmt"
 )
 
 const BaseUrl string = "https://www.animeworld.tv"
