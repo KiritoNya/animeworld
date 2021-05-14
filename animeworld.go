@@ -46,12 +46,16 @@ func NewService(cfg *ServiceConfig) (err error) {
 
 	selenium.SetDebug(cfg.Verbose)
 
+	fmt.Println("[ ] Creating selenium service...")
+	
 	service, err = selenium.NewSeleniumService(cfg.SeleniumPath, cfg.Port, opts...)
 	if err != nil {
 		return err
 	}
 
 	serviceActive = true
+	
+	fmt.Println("[V] Creating selenium service...")
 
 	return nil
 }
