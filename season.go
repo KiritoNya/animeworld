@@ -2,6 +2,7 @@ package animeworld
 
 import (
 	"errors"
+	"bytes"
 	"fmt"
 	"github.com/KiritoNya/htmlutils"
 	"golang.org/x/net/html"
@@ -63,7 +64,7 @@ func NewSeason(urlSeason string) (*Season, error) {
 	return &s, nil
 }
 
-func LoadByFile(data []byte) (*Season, error) {
+func LoadByFileSeason(data []byte) (*Season, error) {
 	
 	node, err := html.Parse(bytes.NewReader(data))	
 	if err != nil {
