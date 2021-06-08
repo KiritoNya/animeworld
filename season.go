@@ -63,6 +63,16 @@ func NewSeason(urlSeason string) (*Season, error) {
 	return &s, nil
 }
 
+func LoadByFile(data []byte) (*Season, error) {
+	
+	node, err := html.Parse(bytes.NewReader(data))	
+	if err != nil {
+		return nil, err	
+	}
+
+	return &Season{node: node}, nil
+}
+
 func (s *Season) GetPageHtml() string {
 	return htmlutils.RenderNode(s.node)
 }
