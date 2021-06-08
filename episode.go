@@ -42,6 +42,10 @@ func NewEpisode(link string) (*Episode, error) {
 	return &Episode{Url: link, htmlPage: htmlBody, StreamLinks: make(map[string]string)}, nil
 }
 
+func (ep *Episode) GetPageHtml() string {
+	return htmlutils.RenderNode(ep.htmlPage)	
+}
+
 //GetNumber extract the number of episode.
 func (ep *Episode) GetNumber() error {
 
