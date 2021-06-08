@@ -63,6 +63,10 @@ func NewSeason(urlSeason string) (*Season, error) {
 	return &s, nil
 }
 
+func (s *Season) GetPageHtml() string {
+	return htmlutils.RenderNode(s.node)
+}
+
 func (s *Season) GetName() error {
 
 	info, err  := htmlutils.QuerySelector(s.node, "div", "class", "info col-md-9")
