@@ -42,7 +42,7 @@ func NewEpisode(link string) (*Episode, error) {
 	return &Episode{Url: link, htmlPage: htmlBody, StreamLinks: make(map[string]string)}, nil
 }
 
-func LoadByFile(data []byte) (*Episode, error) {
+func LoadByFileEpisode(data []byte) (*Episode, error) {
 	
 	node, err := html.Parse(bytes.NewReader(data))	
 	if err != nil {
