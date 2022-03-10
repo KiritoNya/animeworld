@@ -1,8 +1,8 @@
 package animeworld
 
 import (
-	"errors"
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/KiritoNya/htmlutils"
 	"golang.org/x/net/html"
@@ -65,10 +65,10 @@ func NewSeason(urlSeason string) (*Season, error) {
 }
 
 func LoadByFileSeason(data []byte) (*Season, error) {
-	
-	node, err := html.Parse(bytes.NewReader(data))	
+
+	node, err := html.Parse(bytes.NewReader(data))
 	if err != nil {
-		return nil, err	
+		return nil, err
 	}
 
 	return &Season{node: node}, nil
@@ -80,14 +80,14 @@ func (s *Season) GetPageHtml() string {
 
 func (s *Season) GetName() error {
 
-	info, err  := htmlutils.QuerySelector(s.node, "div", "class", "info col-md-9")
+	info, err := htmlutils.QuerySelector(s.node, "div", "class", "info col-md-9")
 	if err != nil {
-		return errors.New("Info of season not found")
+		return errors.New("info of season not found")
 	}
 
 	nameHtml, err := htmlutils.QuerySelector(info[0], "h2", "class", "title")
 	if err != nil {
-		return errors.New("Title not found.")
+		return errors.New("title not found")
 	}
 	s.Name = string(htmlutils.GetNodeText(nameHtml[0], "h2"))
 
@@ -99,12 +99,12 @@ func (s *Season) GetAnilist() error {
 
 	node, err := htmlutils.QuerySelector(s.node, "a", "id", "anilist-button")
 	if err != nil {
-		return errors.New("Anilist button not found")
+		return errors.New("anilist button not found")
 	}
 
 	link, err := htmlutils.GetValueAttr(node[0], "a", "href")
 	if err != nil {
-		return errors.New("Error to extract Anilist link")
+		return errors.New("error to extract Anilist link")
 	}
 
 	s.Anilist = string(link[0])
@@ -119,7 +119,7 @@ func (s *Season) GetEpisodes() error {
 
 	nodes, err := htmlutils.QuerySelector(s.node, "li", "class", "episode")
 	if err != nil {
-		return errors.New("Episodes not found")
+		return errors.New("episodes not found")
 	}
 
 	for _, node := range nodes {
@@ -140,12 +140,12 @@ func (s *Season) GetEpisodes() error {
 
 				link, err := htmlutils.GetValueAttr(node, "a", "href")
 				if err != nil {
-					return errors.New(fmt.Sprintf("Link of episode %d not found", numEp))
+					return fmt.Errorf("link of episode %d not found", numEp)
 				}
 
 				ep, err := NewEpisode(BaseUrl + string(link[0]))
 				if err != nil {
-					return errors.New(fmt.Sprintf("Error to create new episode[%d] object.", numEp))
+					return fmt.Errorf("error to create new episode[%d] object", numEp)
 				}
 
 				ep.Number = append(ep.Number, float64(episodeNum))

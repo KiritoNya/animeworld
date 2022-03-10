@@ -1,4 +1,4 @@
-module github.com/KiritoNya/animeworld
+module github.com/DiegoBrignoli/animeworld
 
 go 1.16
 

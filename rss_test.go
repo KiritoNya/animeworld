@@ -110,8 +110,8 @@ func TestRssAnimeworld_GetLanguageRss(t *testing.T) {
 
 func TestRssAnimeworld_GetItemsTitle(t *testing.T) {
 	result := []string{
-		"Uma Musume: Pretty Derby 2 Ep. 1", //Changes constantly
-		"Mushoku Tensei: Isekai Ittara Honki Dasu Ep. 1-2",     //Changes constantly
+		"Uma Musume: Pretty Derby 2 Ep. 1",                 //Changes constantly
+		"Mushoku Tensei: Isekai Ittara Honki Dasu Ep. 1-2", //Changes constantly
 	}
 
 	rm, err := NewRssAnimeworld()
@@ -133,8 +133,8 @@ func TestRssAnimeworld_GetItemsTitle(t *testing.T) {
 
 func TestRssAnimeworld_GetItemsDescription(t *testing.T) {
 	result := []string{
-		"NUOVO EPISODIO: Uma Musume: Pretty Derby 2 Ep. 1", //Changes constantly
-		"NUOVO EPISODIO: Mushoku Tensei: Isekai Ittara Honki Dasu Ep. 1-2",     //Changes constantly
+		"NUOVO EPISODIO: Uma Musume: Pretty Derby 2 Ep. 1",                 //Changes constantly
+		"NUOVO EPISODIO: Mushoku Tensei: Isekai Ittara Honki Dasu Ep. 1-2", //Changes constantly
 	}
 
 	rm, err := NewRssAnimeworld()
@@ -156,8 +156,8 @@ func TestRssAnimeworld_GetItemsDescription(t *testing.T) {
 
 func TestRssAnimeworld_GetItemsLinks(t *testing.T) {
 	result := []string{
-		"https://www.animeworld.tv/play/uma-musume-pretty-derby-2.jeUb5/OrEZso", //Changes constantly
-		"https://www.animeworld.tv/play/mushoku-tensei-isekai-ittara-honki-dasu.FwbNc/SKUFKi",     //Changes constantly
+		"https://www.animeworld.tv/play/uma-musume-pretty-derby-2.jeUb5/OrEZso",               //Changes constantly
+		"https://www.animeworld.tv/play/mushoku-tensei-isekai-ittara-honki-dasu.FwbNc/SKUFKi", //Changes constantly
 	}
 
 	rm, err := NewRssAnimeworld()
@@ -180,7 +180,7 @@ func TestRssAnimeworld_GetItemsLinks(t *testing.T) {
 func TestRssAnimeworld_GetItemsGuid(t *testing.T) {
 	result := []string{
 		"53601", //Changes constantly
-		"53562",     //Changes constantly
+		"53562", //Changes constantly
 	}
 
 	rm, err := NewRssAnimeworld()
@@ -254,8 +254,8 @@ func TestRssAnimeworld_GetItemsEpisodeNumber(t *testing.T) {
 
 func TestRssAnimeworld_GetItemsEpisodeDouble(t *testing.T) {
 	result := []bool{
-		false,   //Changes constantly
-		true, //Changes constantly
+		false, //Changes constantly
+		true,  //Changes constantly
 	}
 
 	rm, err := NewRssAnimeworld()
@@ -277,7 +277,7 @@ func TestRssAnimeworld_GetItemsEpisodeDouble(t *testing.T) {
 
 func TestRssAnimeworld_GetItemsAnimeName(t *testing.T) {
 	result := []string{
-		"Uma Musume: Pretty Derby 2",   //Changes constantly
+		"Uma Musume: Pretty Derby 2",               //Changes constantly
 		"Mushoku Tensei: Isekai Ittara Honki Dasu", //Changes constantly
 	}
 
@@ -300,7 +300,7 @@ func TestRssAnimeworld_GetItemsAnimeName(t *testing.T) {
 
 func TestRssAnimeworld_GetItemsJtitle(t *testing.T) {
 	result := []string{
-		"Uma Musume: Pretty Derby Season 2",   //Changes constantly
+		"Uma Musume: Pretty Derby Season 2",        //Changes constantly
 		"Mushoku Tensei: Isekai Ittara Honki Dasu", //Changes constantly
 	}
 
@@ -323,7 +323,7 @@ func TestRssAnimeworld_GetItemsJtitle(t *testing.T) {
 
 func TestRssAnimeworld_GetItemsAnimeEpisodes(t *testing.T) {
 	result := []string{
-		"??",   //Changes constantly
+		"??", //Changes constantly
 		"??", //Changes constantly
 	}
 
@@ -346,7 +346,7 @@ func TestRssAnimeworld_GetItemsAnimeEpisodes(t *testing.T) {
 
 func TestRssAnimeworld_GetItemsAnimeDub(t *testing.T) {
 	result := []bool{
-		false,   //Changes constantly
+		false, //Changes constantly
 		false, //Changes constantly
 	}
 
@@ -369,7 +369,7 @@ func TestRssAnimeworld_GetItemsAnimeDub(t *testing.T) {
 
 func TestRssAnimeworld_GetItemsAnimeImage(t *testing.T) {
 	result := []string{
-		"https://img.animeworld.tv/locandine/jeUb5.jpg",   //Changes constantly
+		"https://img.animeworld.tv/locandine/jeUb5.jpg", //Changes constantly
 		"https://img.animeworld.tv/locandine/FwbNc.jpg", //Changes constantly
 	}
 
@@ -392,7 +392,7 @@ func TestRssAnimeworld_GetItemsAnimeImage(t *testing.T) {
 
 func TestRssAnimeworld_GetItemsAnimeCoverImage(t *testing.T) {
 	result := []string{
-		"https://img.animeworld.tv/copertine/0utVc.jpg",   //Changes constantly
+		"https://img.animeworld.tv/copertine/0utVc.jpg", //Changes constantly
 		"https://img.animeworld.tv/copertine/jeUb5.png", //Changes constantly
 	}
 

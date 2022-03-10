@@ -6,17 +6,17 @@ import (
 )
 
 var testEpisode = Episode{
-	Url:          "",
-	StreamLinks:  map[string]string {
+	Url: "",
+	StreamLinks: map[string]string{
 		"AnimeWorld Server": "https://server17.streamingaw.online/DDL/ANIME/JujutsuKaisenSUBITA/JujutsuKaisen_Ep_01_SUB_ITA.mp4",
-		"Streamtape": "https://streamtape.com/e/KLMGkKGlvdF0Rry/JujutsuKaisen_Ep_01_SUB_ITA.mp4",
-		"PlayTube": "https://playtube.ws/embed-piato97hkydy/JujutsuKaisen_Ep_01_SUB_ITA.mp4.html",
-		"DoodStream": "https://dood.so/e/vnupcz3z02mx",
-		"Userload": "https://userload.co/embed/a4f872ff5fd1/JujutsuKaisen_Ep_01_SUB_ITA.mp4",
-		"NinjaStream": "https://ninjastream.to/watch/xvrBA1gK3Zb8o/jujutsukaisen-ep-01-sub-ita-mp4",
-		"VUP": "https://vupload.com/e/pvlzk1dsidfc",
-		"AW (1080p)": "https://player2.animeworld.tv/player?link=https://www.proxyworld1.org/DDL/ANIME/JujutsuKaisenFHD/01/playlist.m3u8",
-		"MixDrop": "https://mixdrop.sx/e/9nwv048lcnz7op",
+		"Streamtape":        "https://streamtape.com/e/KLMGkKGlvdF0Rry/JujutsuKaisen_Ep_01_SUB_ITA.mp4",
+		"PlayTube":          "https://playtube.ws/embed-piato97hkydy/JujutsuKaisen_Ep_01_SUB_ITA.mp4.html",
+		"DoodStream":        "https://dood.so/e/vnupcz3z02mx",
+		"Userload":          "https://userload.co/embed/a4f872ff5fd1/JujutsuKaisen_Ep_01_SUB_ITA.mp4",
+		"NinjaStream":       "https://ninjastream.to/watch/xvrBA1gK3Zb8o/jujutsukaisen-ep-01-sub-ita-mp4",
+		"VUP":               "https://vupload.com/e/pvlzk1dsidfc",
+		"AW (1080p)":        "https://player2.animeworld.tv/player?link=https://www.proxyworld1.org/DDL/ANIME/JujutsuKaisenFHD/01/playlist.m3u8",
+		"MixDrop":           "https://mixdrop.sx/e/9nwv048lcnz7op",
 	},
 	Number:       []float64{20.0},
 	DownloadLink: "",
@@ -62,7 +62,6 @@ func TestEpisode_GetStreamLinks(t *testing.T) {
 		t.Error("error to create object:", err)
 	}
 
-
 	err = ep.GetStreamLinks()
 	if err != nil {
 		t.Fatal(err)
@@ -84,7 +83,7 @@ func TestEpisode_GetDirectLinkServerBeta(t *testing.T) {
 
 	ep.StreamLinks = make(map[string]string)
 
-	ep.StreamLinks = map[string]string {
+	ep.StreamLinks = map[string]string{
 		"Beta Server": "https://www.animeworld.biz/v/6mo2pm6mwdv",
 	}
 
