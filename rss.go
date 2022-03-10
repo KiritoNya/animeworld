@@ -124,7 +124,7 @@ func (ra *RssAnimeworld) GetItemsEpisodeDouble() (epDoubles []bool) {
 func (ra *RssAnimeworld) GetItemsAnimeName() (animeNames []string) {
 	for _, item := range ra.feed.Items {
 		for _, value := range item.Extensions["episode"]["name"] {
-				animeNames = append(animeNames, value.Value)
+			animeNames = append(animeNames, value.Value)
 		}
 	}
 	return animeNames
@@ -134,7 +134,7 @@ func (ra *RssAnimeworld) GetItemsAnimeName() (animeNames []string) {
 func (ra *RssAnimeworld) GetItemsJtitle() (animeJtitles []string) {
 	for _, item := range ra.feed.Items {
 		for _, value := range item.Extensions["episode"]["jtitle"] {
-				animeJtitles = append(animeJtitles, value.Value)
+			animeJtitles = append(animeJtitles, value.Value)
 		}
 	}
 	return animeJtitles
@@ -178,7 +178,7 @@ func (ra *RssAnimeworld) GetItemsAnimeDub() (animeDubs []bool) {
 func (ra *RssAnimeworld) GetItemsAnimeImage() (linksImage []string) {
 	for _, item := range ra.feed.Items {
 		for _, value := range item.Extensions["episode"]["image"] {
-				linksImage = append(linksImage, value.Value)
+			linksImage = append(linksImage, value.Value)
 		}
 	}
 	return linksImage

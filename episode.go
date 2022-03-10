@@ -14,15 +14,15 @@ import (
 )
 
 type Episode struct {
-	Url       string
-	StreamLinks map[string]string
-	Number     []float64
+	Url          string
+	StreamLinks  map[string]string
+	Number       []float64
 	DownloadLink string //TODO: Gestirlo in futuro per rendere il pacchetto generale
-	htmlPage *html.Node
+	htmlPage     *html.Node
 }
 
 type Server struct {
-	ID int
+	ID   int
 	Name string
 }
 
@@ -43,17 +43,17 @@ func NewEpisode(link string) (*Episode, error) {
 }
 
 func LoadByFileEpisode(data []byte) (*Episode, error) {
-	
-	node, err := html.Parse(bytes.NewReader(data))	
+
+	node, err := html.Parse(bytes.NewReader(data))
 	if err != nil {
-		return nil, err	
+		return nil, err
 	}
 
 	return &Episode{htmlPage: node}, nil
 }
 
 func (ep *Episode) GetPageHtml() string {
-	return htmlutils.RenderNode(ep.htmlPage)	
+	return htmlutils.RenderNode(ep.htmlPage)
 }
 
 //GetNumber extract the number of episode.
@@ -61,7 +61,7 @@ func (ep *Episode) GetNumber() error {
 
 	nodes, err := htmlutils.QuerySelector(ep.htmlPage, "li", "class", "episode")
 	if err != nil {
-		return errors.New("Episode not found.")
+		return errors.New("Episode not found")
 	}
 
 	//Foreach episode
@@ -72,7 +72,7 @@ func (ep *Episode) GetNumber() error {
 
 			num, err := htmlutils.GetValueAttr(link[0], "a", "data-episode-num")
 			if err != nil {
-				return errors.New("Episode active number not found.")
+				return errors.New("Episode active number not found")
 			}
 			numString := string(num[0])
 
@@ -91,7 +91,7 @@ func (ep *Episode) GetNumber() error {
 	}
 
 	if err != nil {
-		return errors.New("Error to get active episode.")
+		return errors.New("error to get active episode")
 	}
 
 	return nil
@@ -117,7 +117,7 @@ func (ep *Episode) GetStreamLinks() error {
 	//Get section of servers episodes
 	serversHtml, err := htmlutils.QuerySelector(ep.htmlPage, "div", "class", "server")
 	if err != nil {
-		return errors.New("Error to get servers sections.")
+		return errors.New("error to get servers sections")
 	}
 
 	for _, server := range servers {
@@ -135,7 +135,7 @@ func (ep *Episode) GetStreamLinks() error {
 			//Get all episodes
 			episodesHtml, err = htmlutils.QuerySelector(node[0], "li", "class", "episode")
 			if err != nil {
-				return errors.New("Episode not found.")
+				return errors.New("Episode not found")
 			}
 
 		}
@@ -151,7 +151,7 @@ func (ep *Episode) GetStreamLinks() error {
 
 			num, err := htmlutils.GetValueAttr(link[0], "a", "data-episode-num")
 			if err != nil {
-				return errors.New("Episode active number not found.")
+				return errors.New("episode active number not found")
 			}
 			numString := string(num[0])
 
@@ -176,13 +176,13 @@ func (ep *Episode) GetStreamLinks() error {
 				//Extract direct link
 				href, err := htmlutils.GetValueAttr(link[0], "a", "href")
 				if err != nil {
-					return errors.New("Link of episode not found")
+					return errors.New("link of episode not found")
 				}
 
 				fmt.Println("CALCULATE ON SERVER", server, "EPISODE", ep.Number)
-				resp, err := doRequest(episodeInfoApi+filepath.Base(string(href[0])))
+				resp, err := doRequest(episodeInfoApi + filepath.Base(string(href[0])))
 				if err != nil {
-					return errors.New("Error to get response of episode info api.")
+					return errors.New("error to get response of episode info api")
 				}
 
 				htmlBody, err := html.Parse(strings.NewReader(resp))
@@ -199,12 +199,12 @@ func (ep *Episode) GetStreamLinks() error {
 
 				err = json.Unmarshal(nodeText, &objmap)
 				if err != nil {
-					return errors.New("Error to decode response of episode info api.")
+					return errors.New("error to decode response of episode info api")
 				}
 
 				err = json.Unmarshal(objmap["grabber"], &directLink)
 				if err != nil {
-					return errors.New("Error to decode response of episode info api.")
+					return errors.New("error to decode response of episode info api")
 				}
 
 				ep.StreamLinks[server.Name] = directLink
@@ -240,12 +240,12 @@ func (ep *Episode) GetDownloadLink() error {
 		}
 
 		if string(links[0]) == "" {
-			return errors.New("Direct alternative link not found!")
+			return errors.New("direct alternative link not found")
 		}
 
 		ep.DownloadLink = strings.Replace(string(links[0]), "download-file.php?id=", "", -1)
 	}
-	return  nil
+	return nil
 }
 
 func (ep *Episode) GetDirectLinkServerBeta() (err error) {
@@ -257,7 +257,7 @@ func (ep *Episode) GetDirectLinkServerBeta() (err error) {
 
 			id := filepath.Base(link)
 
-			resp, err := http.Post(AnimeworldBizApi + id, "", nil)
+			resp, err := http.Post(AnimeworldBizApi+id, "", nil)
 			if err != nil {
 				return err
 			}
@@ -277,8 +277,8 @@ func (ep *Episode) GetDirectLinkServerBeta() (err error) {
 				return err
 			}
 
-			data = bytes.Replace(data, []byte("["), []byte(""),-1)
-			data = bytes.Replace(data, []byte("]"), []byte(""),-1)
+			data = bytes.Replace(data, []byte("["), []byte(""), -1)
+			data = bytes.Replace(data, []byte("]"), []byte(""), -1)
 
 			err = json.Unmarshal(data, &objmap)
 			if err != nil {
@@ -305,7 +305,7 @@ func (ep *Episode) GetDirectLinkServerBeta() (err error) {
 				return nil
 			}
 
-			resp, err = client.Do(req)
+			_, err = client.Do(req)
 			if err != nil {
 				return err
 			}
@@ -315,4 +315,3 @@ func (ep *Episode) GetDirectLinkServerBeta() (err error) {
 	}
 	return nil
 }
-

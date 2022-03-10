@@ -10,10 +10,10 @@ import (
 )
 
 type Archive struct {
-	Seasons []*Season
+	Seasons    []*Season
 	TotalPages int
-	url string
-	htmlPage *html.Node
+	url        string
+	htmlPage   *html.Node
 }
 
 func NewArchive(method string) (*Archive, error) {
@@ -52,10 +52,10 @@ func (a *Archive) GetSeason() (err error) {
 
 	err = a.GetTotalPages()
 	if err != nil {
-		a.TotalPages=1
+		a.TotalPages = 1
 	}
 
-	for i:=1; i<=a.TotalPages ; i++ {
+	for i := 1; i <= a.TotalPages; i++ {
 
 		htmlPage := a.htmlPage
 
@@ -83,7 +83,7 @@ func (a *Archive) GetSeason() (err error) {
 		//Get all seasons html sections
 		seasonsNode, err := htmlutils.QuerySelector(items[0], "div", "class", "item")
 		if err != nil {
-			return errors.New("Error to obtain seasons section in the archive")
+			return errors.New("error to obtain seasons section in the archive")
 		}
 
 		for i, seasonNode := range seasonsNode {
@@ -94,19 +94,19 @@ func (a *Archive) GetSeason() (err error) {
 
 			tagA, err := htmlutils.QuerySelector(seasonNode, "a", "class", "name")
 			if err != nil {
-				return errors.New("Error to obtain tag \"a\" of seasons section")
+				return errors.New("error to obtain tag \"a\" of seasons section")
 			}
 
 			href, err := htmlutils.GetValueAttr(tagA[0], "a", "href")
 			if err != nil {
-				return errors.New("Error to obtain link of seasons section")
+				return errors.New("error to obtain link of seasons section")
 			}
 
 			fmt.Println(BaseUrl + string(href[0]))
 
-			season, err := NewSeason( BaseUrl + string(href[0]))
+			season, err := NewSeason(BaseUrl + string(href[0]))
 			if err != nil {
-				return errors.New("Error to create season object")
+				return errors.New("error to create season object")
 			}
 
 			a.Seasons = append(a.Seasons, season)
@@ -120,12 +120,12 @@ func (a *Archive) GetSeason() (err error) {
 func (a *Archive) GetTotalPages() error {
 	div, err := htmlutils.QuerySelector(a.htmlPage, "div", "class", "paging-wrapper")
 	if err != nil {
-		return errors.New("Error to get paging wrapper for calculate max pages")
+		return errors.New("error to get paging wrapper for calculate max pages")
 	}
 
 	totalNum, err := htmlutils.QuerySelector(div[0], "span", "class", "total")
 	if err != nil {
-		return errors.New("Error to get total number of page.")
+		return errors.New("error to get total number of page")
 	}
 
 	numTotal := htmlutils.GetNodeText(totalNum[0], "span")
@@ -144,9 +144,8 @@ func composeURL(method string) string {
 	if method == "all" {
 		link = ArchiveUrl
 	} else {
-		link= ArchiveUrl + method
+		link = ArchiveUrl + method
 	}
 
 	return link
 }
-

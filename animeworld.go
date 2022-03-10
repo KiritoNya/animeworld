@@ -2,10 +2,10 @@ package animeworld
 
 import (
 	"errors"
+	"fmt"
 	"github.com/tebeka/selenium"
 	"io"
 	"os"
-	"fmt"
 )
 
 const BaseUrl string = "https://www.animeworld.tv"
@@ -33,7 +33,7 @@ var serviceActive bool
 func NewService(cfg *ServiceConfig) (err error) {
 
 	if serviceActive {
-		return errors.New("Service already exist")
+		return errors.New("service already exist")
 	}
 
 	opts := []selenium.ServiceOption{
@@ -48,14 +48,14 @@ func NewService(cfg *ServiceConfig) (err error) {
 	selenium.SetDebug(cfg.Verbose)
 
 	fmt.Println("[ ] Creating selenium service...")
-	
+
 	service, err = selenium.NewSeleniumService(cfg.SeleniumPath, cfg.Port, opts...)
 	if err != nil {
 		return err
 	}
 
 	serviceActive = true
-	
+
 	fmt.Println("[V] Creating selenium service...")
 
 	return nil
@@ -82,7 +82,7 @@ func NewDefaultService() error {
 func NewWebDriver(url string, cfg *WebDriverConfig) (selenium.WebDriver, error) {
 
 	if !serviceActive {
-		return nil, errors.New("Service is inactive, read the documentation.")
+		return nil, errors.New("service is inactive, read the documentation")
 	}
 
 	wd, err := selenium.NewRemote(cfg.Capabilities, cfg.UrlService)
