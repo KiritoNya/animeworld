@@ -75,6 +75,16 @@ func (a *Archive) ForwardPage() error{
 	return nil
 }
 
+// HasNextPage is public method that gets if the archive has next page
+func (a *Archive) HasNextPage() bool {
+
+	if a.CurrentPage+1 > a.TotalPages {
+		return false
+	}
+
+	return true
+}
+
 // getInfo is a private method that gets all archive info
 func (a *Archive) getInfo() error {
 	c := colly.NewCollector()
