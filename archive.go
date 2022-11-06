@@ -3,32 +3,39 @@ package animeworld
 import (
 	"errors"
 	"fmt"
-	"github.com/KiritoNya/htmlutils"
-	"golang.org/x/net/html"
+	"github.com/gocolly/colly/v2"
 	"strconv"
-	"strings"
 )
 
+type ArchiveMode int
+
 type Archive struct {
-	Seasons []*Season
+	Mode       ArchiveMode
+	Seasons    []*ArchiveSeason
 	TotalPages int
-	url string
-	htmlPage *html.Node
+	CurrentPage int
 }
 
-func NewArchive(method string) (*Archive, error) {
+type ArchiveSeason struct {
+	Url string
+	Name string
+	Plot string
+	ImageUrl string
+}
 
-	var a Archive
-	var err error
+const (
+	AzList ArchiveMode = iota
+)
 
-	a.url = composeURL(method)
+// NewArchive is a function that return
+func NewArchive(mode ArchiveMode, page int) (*Archive, error) {
 
-	resp, err := doRequest(a.url)
-	if err != nil {
-		return nil, err
+	a := Archive{
+		Mode: mode,
+		CurrentPage: page,
 	}
 
-	a.htmlPage, err = html.Parse(strings.NewReader(resp))
+	err := a.getInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -36,101 +43,15 @@ func NewArchive(method string) (*Archive, error) {
 	return &a, nil
 }
 
-func (a *Archive) GetSeason() (err error) {
+// NextPage is a public method that gets all archive info from the next page
+func (a *Archive) NextPage() error{
 
-	if a.htmlPage == nil {
-		resp, err := doRequest(composeURL("all"))
-		if err != nil {
-			return err
-		}
-
-		a.htmlPage, err = html.Parse(strings.NewReader(resp))
-		if err != nil {
-			return err
-		}
+	if a.TotalPages != 0 && a.CurrentPage+1 > a.TotalPages {
+		return errors.New("next page doesn't exist")
 	}
 
-	err = a.GetTotalPages()
-	if err != nil {
-		a.TotalPages=1
-	}
-
-	for i:=1; i<=a.TotalPages ; i++ {
-
-		htmlPage := a.htmlPage
-
-		if i != 1 {
-
-			link := a.url + "?page=" + strconv.Itoa(i)
-
-			resp, err := doRequest(link)
-			if err != nil {
-				return err
-			}
-
-			htmlPage, err = html.Parse(strings.NewReader(resp))
-			if err != nil {
-				return err
-			}
-
-		}
-
-		items, err := htmlutils.QuerySelector(htmlPage, "div", "class", "items")
-		if err != nil {
-			return errors.New("Archive error: " + err.Error())
-		}
-
-		//Get all seasons html sections
-		seasonsNode, err := htmlutils.QuerySelector(items[0], "div", "class", "item")
-		if err != nil {
-			return errors.New("Error to obtain seasons section in the archive")
-		}
-
-		for i, seasonNode := range seasonsNode {
-
-			if i == 0 {
-				continue
-			}
-
-			tagA, err := htmlutils.QuerySelector(seasonNode, "a", "class", "name")
-			if err != nil {
-				return errors.New("Error to obtain tag \"a\" of seasons section")
-			}
-
-			href, err := htmlutils.GetValueAttr(tagA[0], "a", "href")
-			if err != nil {
-				return errors.New("Error to obtain link of seasons section")
-			}
-
-			fmt.Println(BaseUrl + string(href[0]))
-
-			season, err := NewSeason( BaseUrl + string(href[0]))
-			if err != nil {
-				return errors.New("Error to create season object")
-			}
-
-			a.Seasons = append(a.Seasons, season)
-		}
-
-	}
-
-	return nil
-}
-
-func (a *Archive) GetTotalPages() error {
-	div, err := htmlutils.QuerySelector(a.htmlPage, "div", "class", "paging-wrapper")
-	if err != nil {
-		return errors.New("Error to get paging wrapper for calculate max pages")
-	}
-
-	totalNum, err := htmlutils.QuerySelector(div[0], "span", "class", "total")
-	if err != nil {
-		return errors.New("Error to get total number of page.")
-	}
-
-	numTotal := htmlutils.GetNodeText(totalNum[0], "span")
-
-	a.TotalPages, err = strconv.Atoi(string(numTotal))
+	a.CurrentPage++
+	err := a.getInfo()
 	if err != nil {
 		return err
 	}
@@ -138,15 +59,76 @@ func (a *Archive) GetTotalPages() error {
 	return nil
 }
 
-func composeURL(method string) string {
-	var link string
+// ForwardPage is a public method that gets all archive info from the forward page
+func (a *Archive) ForwardPage() error{
 
-	if method == "all" {
-		link = ArchiveUrl
-	} else {
-		link= ArchiveUrl + method
+	if a.CurrentPage-1 < 0 {
+		return errors.New("forward page doesn't exist")
 	}
 
-	return link
+	a.CurrentPage--
+	err := a.getInfo()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
+// getInfo is a private method that gets all archive info
+func (a *Archive) getInfo() error {
+	c := colly.NewCollector()
+
+	// get seasons info
+	c.OnHTML("div.item", a.getSeasons)
+
+	// get pages info
+	c.OnHTML("div.paging-wrapper", a.getPagesInfo)
+
+	c.OnRequest(func(r *colly.Request) {
+		fmt.Println("Visiting", r.URL)
+	})
+
+	err := c.Visit(a.makeArchiveUrl())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// getSeasons is a private method that gets base info for all series.
+func (a *Archive) getSeasons(e *colly.HTMLElement) {
+
+	as := ArchiveSeason{
+		Url:      BaseUrl + e.ChildAttr("a", "href"),
+		Name:     e.ChildText("a.name"),
+		Plot:     e.ChildText("p"),
+		ImageUrl: e.ChildAttr("img", "src"),
+	}
+
+	a.Seasons = append(a.Seasons, &as)
+}
+
+// getPagesInfo is a private method that gets current page and total pages.
+func (a *Archive) getPagesInfo(e *colly.HTMLElement) {
+
+	a.CurrentPage, _ = strconv.Atoi(e.ChildAttr("#page-input", "placeholder"))
+	a.TotalPages, _ = strconv.Atoi(e.ChildText("span.total"))
+}
+
+// makeArchiveUrl is a private method that returns the correct url by archive mode.
+func (a *Archive) makeArchiveUrl() string {
+
+	// Check default value
+	if a.CurrentPage == 0 {
+		a.CurrentPage = 1
+	}
+
+	switch a.Mode {
+	case AzList:
+		return fmt.Sprintf("%s/az-list/?page=%d", BaseUrl, a.CurrentPage)
+	default:
+		return BaseUrl + "/az-list/"
+	}
+}

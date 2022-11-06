@@ -1,158 +1,196 @@
 package animeworld
 
 import (
-	"errors"
-	"bytes"
 	"fmt"
-	"github.com/KiritoNya/htmlutils"
+	"github.com/gocolly/colly/v2"
 	"golang.org/x/net/html"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //Season is a struct with the information of season anime.
 type Season struct {
 	Cover         string
-	Name          string
+	Title          string
 	Category      string
 	Audio         string
-	RelaseData    time.Time
-	ReleaseSeason ReleasingSeason
-	Vote          int
+	ReleaseData    string
+	ReleaseSeason string
+	Vote          float64
 	Duration      int //Durata in minuti
 	TotEpisode    int
 	Visuals       int
-	Trama         string
+	Plot         string
 	Keywords      []string
-	Relations     []*Season
-	Suggestions   []*Season
+	Relations     []*SeasonRelated
+	Suggestions   []*SeasonSuggestion
 	Episodes      []*Episode
 	MyAnimeList   string
 	Anilist       string
+	Mangaworld	  string
 	Youtube       string
 	node          *html.Node
 	//Comments []Comment
-	//Status State
-	//Studio Studio
-	//Genres []Genre
+	Status string
+	Studio string
+	Genres []string
 }
 
-//ReleasingSeason is a struct with the information of a season. EX: "Inverno 2018"
-type ReleasingSeason struct {
-	Season string
-	Year   int
+// SeasonSuggestion is a struct with the information of suggestion season.
+type SeasonSuggestion struct {
+	Title string
+	Url string
+	Cover string
 }
 
-//NewSeason is a constructor of Season object.
-func NewSeason(urlSeason string) (*Season, error) {
+// SeasonRelated is a struct with the information of related season.
+type SeasonRelated struct {
+	Title string
+	Url string
+	Cover string
+	Category string
+	Year int
+	Duration int
+}
+
+
+// NewSeason is a Season constructor that return the season with all its info
+func NewSeason(url string) (*Season, error) {
 
 	var s Season
 
-	resp, err := doRequest(urlSeason)
+	c := colly.NewCollector()
+
+	// get seasons info
+	c.OnHTML("#thumbnail-watch", s.getCover)
+
+	// get pages info
+	c.OnHTML("div.widget.info", s.getInfo)
+
+	// get keywords
+	c.OnHTML("#tagsReload", s.getKeywords)
+
+	// get related
+	c.OnHTML("div.widget-body.related", s.getRelated)
+
+	// get suggestions
+	c.OnHTML("div.film-list.interesting", s.getSuggestions)
+
+	// get links
+	c.OnHTML("#controls", s.getSeasonLinks)
+
+	// get episodes
+	c.OnHTML("div.server.active", s.getEpisodes)
+
+	c.OnRequest(func(r *colly.Request) {
+		fmt.Println("Visiting", r.URL)
+	})
+
+	err := c.Visit(url)
 	if err != nil {
 		return nil, err
 	}
-
-	htmlBody, err := html.Parse(strings.NewReader(resp))
-	if err != nil {
-		return nil, err
-	}
-
-	s.node = htmlBody
 
 	return &s, nil
 }
 
-func LoadByFileSeason(data []byte) (*Season, error) {
-	
-	node, err := html.Parse(bytes.NewReader(data))	
-	if err != nil {
-		return nil, err	
-	}
-
-	return &Season{node: node}, nil
+// getCover is a private method that gets the season cover
+func (s *Season) getCover(e *colly.HTMLElement) {
+	s.Cover = e.ChildAttr("img", "src")
 }
 
-func (s *Season) GetPageHtml() string {
-	return htmlutils.RenderNode(s.node)
-}
+// getInfo is a private method that gets the basic info
+func (s *Season) getInfo(e *colly.HTMLElement) {
 
-func (s *Season) GetName() error {
-
-	info, err  := htmlutils.QuerySelector(s.node, "div", "class", "info col-md-9")
-	if err != nil {
-		return errors.New("Info of season not found")
-	}
-
-	nameHtml, err := htmlutils.QuerySelector(info[0], "h2", "class", "title")
-	if err != nil {
-		return errors.New("Title not found.")
-	}
-	s.Name = string(htmlutils.GetNodeText(nameHtml[0], "h2"))
-
-	return nil
-}
-
-//GetAnilist extract anilist link.
-func (s *Season) GetAnilist() error {
-
-	node, err := htmlutils.QuerySelector(s.node, "a", "id", "anilist-button")
-	if err != nil {
-		return errors.New("Anilist button not found")
-	}
-
-	link, err := htmlutils.GetValueAttr(node[0], "a", "href")
-	if err != nil {
-		return errors.New("Error to extract Anilist link")
-	}
-
-	s.Anilist = string(link[0])
-
-	return nil
-}
-
-//GetEpisodes create all episode object of season.
-func (s *Season) GetEpisodes() error {
-
-	var lastEpisodeNum float64
-
-	nodes, err := htmlutils.QuerySelector(s.node, "li", "class", "episode")
-	if err != nil {
-		return errors.New("Episodes not found")
-	}
-
-	for _, node := range nodes {
-
-		numEp := htmlutils.GetNodeText(node, "a")
-		eps := strings.Split(string(numEp), "-") //Potrebbero esserci ep come "1-2"
-
-		for _, ep := range eps {
-
-			episodeNum, err := strconv.ParseFloat(ep, 64)
-			if err != nil {
-				return err
-			}
-
-			if lastEpisodeNum < episodeNum {
-
-				lastEpisodeNum = episodeNum
-
-				link, err := htmlutils.GetValueAttr(node, "a", "href")
-				if err != nil {
-					return errors.New(fmt.Sprintf("Link of episode %d not found", numEp))
-				}
-
-				ep, err := NewEpisode(BaseUrl + string(link[0]))
-				if err != nil {
-					return errors.New(fmt.Sprintf("Error to create new episode[%d] object.", numEp))
-				}
-
-				ep.Number = append(ep.Number, float64(episodeNum))
-
-				s.Episodes = append(s.Episodes, ep)
-			}
+	s.Title = e.ChildText("h2.title")
+	e.ForEach("dd", func (position int, dd *colly.HTMLElement) {
+		switch position {
+		case 0:
+			s.Category = strings.ReplaceAll(dd.Text, "  ", "")
+			s.Category = strings.ReplaceAll(s.Category, "\n", "")
+		case 1:
+			s.Audio = dd.Text
+		case 2:
+			s.ReleaseData = dd.Text
+		case 3:
+			s.ReleaseSeason = dd.Text
+		case 4:
+			s.Studio = strings.ReplaceAll(dd.Text, "\n", "")
+			s.Studio = strings.ReplaceAll(s.Studio, "  ", "")
+		case 5:
+			genres := strings.ReplaceAll(dd.Text, "\n", "")
+			genres = strings.ReplaceAll(genres, "  ", "")
+			s.Genres = strings.Split(genres, ",")
+		case 6:
+			s.Vote, _ = strconv.ParseFloat(dd.ChildText("#average-vote"), 32)
+		case 7:
+			s.Duration, _ = strconv.Atoi(strings.Split(dd.Text, " ")[0])
+		case 8:
+			s.TotEpisode, _ = strconv.Atoi(dd.Text)
+		case 9:
+			s.Status = strings.ReplaceAll(dd.Text, "\n", "")
+			s.Status = strings.ReplaceAll(s.Status, "  ", "")
+		case 10:
+			s.Visuals, _ = strconv.Atoi(strings.ReplaceAll(dd.Text, ".", ""))
 		}
-	}
-	return nil
+	})
+	s.Plot = e.ChildText("div.desc")
+}
+
+// getKeywords is a private method that gets season keywords
+func (s *Season) getKeywords(e *colly.HTMLElement) {
+	keywords := strings.ReplaceAll(e.Text, "  ", "")
+	s.Keywords = strings.Split(keywords, " - ")
+}
+
+// getSuggestions is a private method that gets suggestion season
+func (s *Season) getSuggestions(e *colly.HTMLElement) {
+
+	e.ForEach("div.item", func (_ int, ele *colly.HTMLElement){
+		var sr SeasonSuggestion
+		sr.Title = e.ChildAttr("a.name", "title")
+		sr.Cover = e.ChildAttr("img", "src")
+		sr.Url = BaseUrl + e.ChildAttr("a.name", "href")
+		s.Suggestions = append(s.Suggestions, &sr)
+	})
+}
+
+// getRelated is a private method that gets related season
+func (s *Season) getRelated(e *colly.HTMLElement) {
+
+	e.ForEach("div.item", func (_ int, ele *colly.HTMLElement){
+		var sr SeasonRelated
+		sr.Title = e.ChildText("a.name")
+		sr.Cover = e.ChildAttr("img", "src")
+		sr.Url = BaseUrl + e.ChildAttr("a.name", "href")
+
+		// gets season info
+		info := strings.Split(e.ChildText("p"), " - ")
+		sr.Category = info[0]
+		sr.Year, _ = strconv.Atoi(info[1])
+		sr.Duration, _ = strconv.Atoi(strings.Split(info[2], " ")[0])
+
+		s.Relations = append(s.Relations, &sr)
+	})
+}
+
+// getSeasonLinks is a private method that gets season link like MAL, anilist or youtube trailer
+func (s *Season) getSeasonLinks(e *colly.HTMLElement) {
+
+	s.MyAnimeList = e.ChildAttr("#mal-button", "href")
+	s.Anilist = e.ChildAttr("#anilist-button", "href")
+	s.Mangaworld = e.ChildAttr("#mangaworld-button", "href")
+	s.Youtube = e.ChildAttr("div.trailer.control.tip.tippy-desktop-only", "data-url")
+}
+
+// getEpisodes is a private method that gets season episodes
+func (s *Season) getEpisodes(e *colly.HTMLElement) {
+
+	e.ForEach("li.episode", func (_ int, ele *colly.HTMLElement) {
+		var ep Episode
+		ep.Url = BaseUrl + ele.ChildAttr("a", "href")
+		ep.Name = ele.ChildText("a")
+
+		s.Episodes = append(s.Episodes, &ep)
+	})
 }

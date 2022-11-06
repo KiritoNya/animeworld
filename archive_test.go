@@ -1,32 +1,59 @@
-package animeworld
+package animeworld_test
 
-import "testing"
+import (
+	"github.com/KiritoNya/animeworld"
+	"testing"
+)
 
 func TestNewArchive(t *testing.T) {
-	_, err := NewArchive("all")
+
+	a, err := animeworld.NewArchive(animeworld.AzList, 1)
 	if err != nil {
-		t.Fatal("Error to create archive object")
+		t.Fatal(err)
 	}
-	t.Log("[OK] Create object")
+	t.Log("ARCHIVE: ", a)
 }
 
-func TestArchive_GetSeason(t *testing.T) {
+func TestArchive_NextPage(t *testing.T) {
 
-	a, err := NewArchive("x")
+	a, err := animeworld.NewArchive(animeworld.AzList, 1)
 	if err != nil {
-		t.Fatal("Error to create archive object")
+		t.Fatal(err)
 	}
 
-	_ = a.GetSeason()
-
-	for _, season := range a.Seasons {
-
-		err := season.GetName()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		t.Log(season.Name)
-
+	err = a.NextPage()
+	if err != nil {
+		t.Fatal(err)
 	}
+
+	// test limit
+	a.CurrentPage = a.TotalPages
+	err = a.NextPage()
+	if err == nil {
+		t.Fatal("limit exceed")
+	}
+
+	t.Log("ARCHIVE:", a)
+}
+
+func TestArchive_ForwardPagePage(t *testing.T) {
+
+	a, err := animeworld.NewArchive(animeworld.AzList, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.ForwardPage()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// test limit
+	a.CurrentPage = 0
+	err = a.ForwardPage()
+	if err == nil {
+		t.Fatal("limit exceed")
+	}
+
+	t.Log("ARCHIVE:", a)
 }
